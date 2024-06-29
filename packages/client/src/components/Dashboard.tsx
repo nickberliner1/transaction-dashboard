@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -18,22 +18,48 @@ import {
 	FormControlLabel,
 } from "@mui/material";
 import { ThemeProvider, CssBaseline } from "@mui/material";
-import { UserData } from "../../../lib-common/types";
+import { UserData, DecodedToken } from "../../../lib-common/types";
 import { lightTheme, darkTheme } from "../theme";
 
 const Dashboard: React.FC = () => {
 	const [user, setUser] = useState<UserData | null>(null);
-	const { logout } = useAuth();
-	const navigate = useNavigate();
-	const { smeDataError, smeData, fetchSMEData } = useSME();
 	const [darkMode, setDarkMode] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 
+	const navigate = useNavigate();
+	const { logout } = useAuth();
+	const { smeDataError, smeData, fetchSMEData } = useSME();
+
+	const handleTokenExpiration = useCallback(() => {
+		const token = localStorage.getItem("authToken");
+
+		if (token) {
+			const decodedToken: DecodedToken = jwtDecode(token);
+			const currentTime = Date.now() / 1000;
+
+			if (decodedToken.exp > currentTime) {
+				const remainingTime = (decodedToken.exp - currentTime) * 1000;
+
+				setTimeout(() => {
+					logout();
+					navigate("/login");
+				}, remainingTime);
+			} else {
+				logout();
+				navigate("/login");
+			}
+		} else {
+			navigate("/login");
+		}
+	}, [logout, navigate]);
+
 	useEffect(() => {
 		setIsLoading(true);
+		handleTokenExpiration();
+
 		const token = localStorage.getItem("authToken");
 		if (token) {
-			const decodedToken: any = jwtDecode(token);
+			const decodedToken: DecodedToken = jwtDecode(token);
 			setUser(decodedToken.userData);
 
 			fetchSMEData(decodedToken.userData.smeId)
@@ -51,7 +77,7 @@ const Dashboard: React.FC = () => {
 		if (savedTheme) {
 			setDarkMode(savedTheme === "dark");
 		}
-	}, [navigate]);
+	}, [handleTokenExpiration, fetchSMEData, navigate]);
 
 	const handleThemeChange = () => {
 		const newTheme = !darkMode ? "dark" : "light";

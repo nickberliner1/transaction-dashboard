@@ -42,11 +42,12 @@ describe("Dashboard Component", () => {
 				profileImage: "/path/to/image",
 				smeId: "test-sme-id",
 			},
+			exp: Math.floor(Date.now() / 1000) - 10, // Token expired 10 seconds ago
 		});
 		Object.defineProperty(window, "localStorage", {
 			value: {
 				getItem: jest.fn().mockImplementation((key) => {
-					if (key === "authToken") return "valid-token";
+					if (key === "authToken") return "expired-token";
 					if (key === "theme") return "light";
 					return null;
 				}),
@@ -112,5 +113,25 @@ describe("Dashboard Component", () => {
 
 		await waitFor(() => expect(mockFetchSMEData).toHaveBeenCalled());
 		expect(screen.getByText(/transactions/i)).toBeInTheDocument();
+	});
+
+	it("logs out and navigates to login when token has expired", async () => {
+		(jwtDecode as jest.Mock).mockReturnValue({
+			userData: {
+				name: "Test User",
+				profileImage: "/path/to/image",
+				smeId: "test-sme-id",
+			},
+			exp: Math.floor(Date.now() / 1000) - 10,
+		});
+
+		await act(async () => {
+			renderWithProviders(<Dashboard />);
+		});
+
+		await waitFor(() => {
+			expect(mockLogout).toHaveBeenCalled();
+			expect(mockNavigate).toHaveBeenCalledWith("/login");
+		});
 	});
 });
