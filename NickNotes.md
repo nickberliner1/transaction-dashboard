@@ -19,6 +19,8 @@
         frodo.baggins@test.com / 123code
         gollum@test.com / 123code
         ```
+    - To run tests, run the command `npx jest`
+
     - Up at the top you will see your user's name and profile picture, the SME they belong to, and a button to logout. There is a switch to change the application into dark mode, if that's what you prefer.
     - You can navigate the transactions and click on one to see more details. You are also able to filter the transactions by their status, except for the 'REVERSED' status.
     - Your login will expire after 1 day, and your browser will save your login status across multiple tabs, as well as save your dark mode preference. This means that if you open a new tab and go to `http://localhost:3300/dashboard`, if you have logged in on another page you can access this, however if you are not logged in you will be redirected to `http://localhost:3300/login`
@@ -28,7 +30,7 @@
 - There should be an `.env` file to save the API urls  
 - Restrict CORS origins to trusted domains in production and avoid using wildcard * for credentials
 - Use environment variables to switch CORS settings between development and production
-- Add more tests and separated them into specific folders
+- Add more tests and separate them into specific folders
 - Paginate the transactions
 - Use a state management library like Redux
 - Add a Docker file
