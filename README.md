@@ -1,5 +1,3 @@
-# Nick's notes
-
 ### Running the app
 - Server
     - After cloning the project into a directory of your choice, navigate to the `finmid-challenge`
